@@ -80,6 +80,17 @@ func Long(str string) int64 {
 	*/
 }
 
+func Ncy(i int64) (s string) {
+
+	if i == 0 {
+		return "0.00"
+	}
+	var f float64 = float64(i)
+	f = f / 100
+	s = fmt.Sprintf("%0.2f", f)
+	return
+}
+
 // Convert any type to string.
 func Parse(value interface{}, args ...int) (s string) {
 	switch v := value.(type) {
