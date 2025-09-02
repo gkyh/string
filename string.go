@@ -36,59 +36,48 @@ func Float64(f string) float64 {
 
 // "12,123.45"->1212345
 func Long(str string) int64 {
+    // 去掉空格和千分位逗号
+    str = strings.ReplaceAll(str, ",", "")
+    str = strings.TrimSpace(str)
 
-	re, _ := regexp.Compile(`[^\d^\.^\-]`)
-	src := re.ReplaceAllString(str, "")
+    // 只保留数字、小数点、负号
+    re := regexp.MustCompile(`[^\d.\-]`)
+    src := re.ReplaceAllString(str, "")
+    if src == "" {
+        return 0
+    }
 
-	f64, err := strconv.ParseFloat(src, 64)
-	if err != nil {
-		return 0
-	}
+    parts := strings.SplitN(src, ".", 2)
 
-	s := fmt.Sprintf("%0.0f", f64*100)
-	i64, _ := strconv.ParseInt(s, 10, 64)
-	return int64(i64)
+    // 整数部分
+    intPart, _ := strconv.ParseInt(parts[0], 10, 64)
+    result := intPart * 100
 
-	/*
-		strs := strings.Split(src, ".")
+    // 小数部分
+    if len(parts) == 2 {
+        frac := parts[1]
+        if len(frac) > 2 {
+            frac = frac[:2] // 截断两位（如果想四舍五入，这里改逻辑）
+        }
+        for len(frac) < 2 {
+            frac += "0" // 补足两位
+        }
+        fracInt, _ := strconv.ParseInt(frac, 10, 64)
+        if intPart < 0 {
+            result -= fracInt // 负数情况
+        } else {
+            result += fracInt
+        }
+    }
 
-		s64 := strs[0]
-
-		if len(strs) == 1 {
-			s64 += "00"
-		} else {
-
-			ys := strs[1]
-
-			if len(ys) == 2 {
-
-				s64 += ys
-			} else if len(ys) == 1 {
-
-				s64 += ys
-				s64 += "0"
-			} else if len(ys) == 0 {
-
-				s64 += "00"
-			} else {
-
-				s64 += string(ys[0:2])
-			}
-		}
-
-		i64, _ := strconv.ParseInt(s64, 10, 64)
-	*/
+    return result
 }
 
 func Ncy(i int64) (s string) {
 
-	if i == 0 {
-		return "0.00"
-	}
-	var f float64 = float64(i)
-	f = f / 100
-	s = fmt.Sprintf("%0.2f", f)
-	return
+	yuan := i / 100
+    jiaoFen := i % 100
+    return fmt.Sprintf("%d.%02d", yuan, jiaoFen)
 }
 
 // Convert any type to string.
